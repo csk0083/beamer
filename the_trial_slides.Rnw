@@ -1,0 +1,156 @@
+\documentclass[10pt]{beamer}
+\usetheme[10pt]{Singapore}
+\usecolortheme{beaver}
+
+\begin{document}
+
+\title{The Trial}
+\author{Chris Kozak}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}
+  \frametitle{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{Load Packages}
+\begin{frame}[fragile]
+  \frametitle{Load Packages}
+    \begin{itemize}
+      \item
+        <<warning=FALSE,message=FALSE>>=
+        library(dplyr) #for querying data
+        @
+      \item
+        <<warning=FALSE,message=FALSE>>=
+        library(ggplot2) #for visualizing data
+        @
+      \item
+        <<warning=FALSE,message=FALSE>>=
+        library(gutenbergr) #for open-source docs
+        @
+      \item
+        <<warning=FALSE,message=FALSE>>=
+        library(stringr) #for working with text data
+        @
+      \item
+        <<warning=FALSE,message=FALSE>>=
+        library(easyGgplot2) #easily renders plots together
+        @
+      \item
+        <<warning=FALSE,message=FALSE>>=
+        library(tidytext) #for quantifying sentiment in text
+        @
+    
+    \end{itemize}
+\end{frame}
+
+\section{The Trial}
+\begin{frame}[fragile]
+  \frametitle{About The Trial}
+German author Franz Kafka wrote The Trial around 1915, but it wasn't published until 1925, after his death. It's the bleak, authoritarian story of a man on a trial for a crime he's not even aware of. This version was translated by David Wyllie. Naturally, other translations may feature different word choices, as the translator's goal here is to adapt a book written in an older style of German to a much newer style of English.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Download The Trial}
+    <<warning=FALSE,message=FALSE>>=
+    trial <- gutenberg_download(7849) #download The Trial
+    head(trial$text) #preview the text
+    @
+\end{frame}
+
+\section{Unnest the Tokens}
+\begin{frame}[fragile]
+  \frametitle{Unnest the Tokens}
+    <<>>=
+    trial_words <- trial%>%
+      unnest_tokens(word, text) #separates each word
+    trial_words$gutenberg_id <- NULL
+    @
+\end{frame}
+
+\section{Bing Sentiment Lexicon}
+\begin{frame}[fragile]
+  \frametitle{Bing Sentiment Lexicon}
+  <<>>=
+    #for positive/negative sentiments
+    bing <- get_sentiments('bing') 
+    
+    head(bing) #preview bing
+  @
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Merging the Lexicon}
+  <<message=FALSE>>=
+    #merge bing with The Trial
+    trial_words <- inner_join(trial_words,bing)
+    trial_words$gutenberg_id<-NULL #delete extra column
+    head(trial_words) #preview the dataframe/tibble
+  @
+\end{frame}
+
+\section{Data Transformation}
+\begin{frame}[fragile]
+  \frametitle{Positive Words Transformation}
+<<>>=
+trial_pos <- trial_words%>%
+  filter(sentiment=='positive')%>%
+  group_by(word)%>%
+  summarize(count=n(), sentiment=first(sentiment))%>%
+  arrange(count)%>%
+  top_n(15, wt=count)
+
+trial_pos$word <- factor(trial_pos$word, 
+                         levels=trial_pos$word)
+
+pos_plot <- ggplot()+
+  geom_bar(data = trial_pos, 
+           aes(x=word, y=count), stat='identity', fill='blue')+
+  coord_flip()+
+  ggtitle('Positive words')
+@
+\end{frame}
+
+\section{Positive Words}
+\begin{frame}[fragile]
+  \frametitle{Positive Plot}
+<<>>=
+pos_plot
+@
+\end{frame}
+
+\section{Negative Words}
+\begin{frame}[fragile]
+  \frametitle{Negative Words Transformation}
+<<>>=
+trial_neg <- trial_words%>%
+  filter(sentiment=='negative')%>%
+  group_by(word)%>%
+  summarize(count=n(), 
+            sentiment=first(sentiment))%>%
+  arrange(count)%>%
+  top_n(15, wt=count)
+
+trial_neg$word <- factor(trial_neg$word, 
+                         levels=trial_neg$word)
+
+neg_plot <- ggplot()+
+  geom_bar(data = trial_neg, 
+           aes(x=word, y=count), stat='identity', fill='red')+
+  coord_flip()+
+  ggtitle('Negative words')
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Negative Plot}
+<<>>=
+neg_plot
+@
+
+\end{frame}
+\end{document}

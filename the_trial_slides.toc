@@ -1,0 +1,7 @@
+\beamer@sectionintoc {1}{Load Packages}{3}{0}{1}
+\beamer@sectionintoc {2}{The Trial}{4}{0}{2}
+\beamer@sectionintoc {3}{Unnest the Tokens}{6}{0}{3}
+\beamer@sectionintoc {4}{Bing Sentiment Lexicon}{7}{0}{4}
+\beamer@sectionintoc {5}{Data Transformation}{9}{0}{5}
+\beamer@sectionintoc {6}{Positive Words}{10}{0}{6}
+\beamer@sectionintoc {7}{Negative Words}{11}{0}{7}
